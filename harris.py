@@ -1,4 +1,5 @@
 import os
+import csv
 import cv2
 import glob
 import numpy as np
@@ -137,23 +138,25 @@ def findImageCorners(gray_img, kernel, verbose=False):
     return corner_list, output_img
 
 
-def saveCornerResult(filename, corner_list, corner_img, img_path):
-    corner_file = open(f'report/{filename}.txt', 'w')
-    corner_file.write('x ,\t y, \t r \n')
-    for i in range(len(corner_list)):
-        corner_file.write(
-            str(corner_list[i][0]) + ' , ' + str(corner_list[i][1]) + ' , ' + str(corner_list[i][2]) + '\n')
-    corner_file.close()
+def saveCornerResult(filename, corner_list, corner_img):
+    with open(os.path.join("output", "charts", f"{filename}.csv"), 'w') as corner_file:
+        writer = csv.DictWriter(corner_file, fieldnames=["x", "y", "r"])
+        writer.writeheader()
+        for i in range(len(corner_list)):
+            writer.writerow({
+                "x": str(corner_list[i][0]),
+                "y": str(corner_list[i][1]),
+                "r": str(corner_list[i][2])
+            })
 
     if corner_img is not None:
-        cv2.imwrite(os.path.join(img_path, "output", filename), corner_img)
+        cv2.imwrite(os.path.join("output", "images", filename), corner_img)
 
 
 def main():
-    img_path = "images"
     kernel = myGaussianKernel(size=5, sigma=2)
 
-    files = glob.glob(os.path.join(img_path, "input", "img*"))
+    files = glob.glob(os.path.join("images", "img*"))
     for file in files:
         filename = file.split(os.path.sep)[-1]
         try:
@@ -163,7 +166,7 @@ def main():
             print(f"Input {filename}: {error}")
             continue
         corner_list, output_img = findImageCorners(gray_img, kernel)
-        saveCornerResult(filename, corner_list, output_img, img_path)
+        saveCornerResult(filename, corner_list, output_img)
 
 
 if __name__ == "__main__":
