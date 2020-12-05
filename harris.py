@@ -3,6 +3,7 @@ import csv
 import cv2
 import glob
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 
 
@@ -139,15 +140,21 @@ def findImageCorners(gray_img, kernel, verbose=False):
 
 
 def saveCornerResult(filename, corner_list, corner_img):
-    with open(os.path.join("output", "charts", f"{filename}.csv"), 'w') as corner_file:
-        writer = csv.DictWriter(corner_file, fieldnames=["x", "y", "r"])
-        writer.writeheader()
-        for i in range(len(corner_list)):
-            writer.writerow({
-                "x": str(corner_list[i][0]),
-                "y": str(corner_list[i][1]),
-                "r": str(corner_list[i][2])
-            })
+    if corner_list:
+        csvfile = os.path.join("output", f"{filename}.csv")
+        with open(csvfile, 'w') as corner_file:
+            writer = csv.DictWriter(corner_file, fieldnames=["x", "y", "r"])
+            writer.writeheader()
+            for i in range(len(corner_list)):
+                writer.writerow({
+                    "x": str(corner_list[i][0]),
+                    "y": str(corner_list[i][1]),
+                    "r": str(corner_list[i][2])
+                })
+        df = pd.read_csv(csvfile)
+        print(filename, len(df.index))
+        plt.bar(df['x'], df['r'])
+        plt.savefig(os.path.join("output", "charts", f"{filename}"))
 
     if corner_img is not None:
         cv2.imwrite(os.path.join("output", "images", filename), corner_img)
