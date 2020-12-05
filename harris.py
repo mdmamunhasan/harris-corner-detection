@@ -28,8 +28,8 @@ def myGaussianKernel(size, sigma=1, verbose=False):
 
 
 def myImageFilter(image, kernel, average=False, verbose=False):
-    print("Image Shape : {}".format(image.shape))
-    print("Kernel Shape : {}".format(kernel.shape))
+    # print("Image Shape : {}".format(image.shape))
+    # print("Kernel Shape : {}".format(kernel.shape))
 
     if verbose:
         plt.imshow(image, cmap='gray')
@@ -59,7 +59,7 @@ def myImageFilter(image, kernel, average=False, verbose=False):
             if average:
                 output[row, col] /= kernel.shape[0] * kernel.shape[1]
 
-    print("Output Image size : {}".format(output.shape))
+    print("Output Image Size: {0}".format(output.shape))
 
     if verbose:
         plt.imshow(output, cmap='gray')
@@ -91,9 +91,9 @@ def findImageCorners(gray_img, kernel, verbose=False):
     y_range = gray_img.shape[0] - offset
     x_range = gray_img.shape[1] - offset
 
-    print("Gxy Shape : {}".format(Gxy.shape))
-    print("dy Shape : {}".format(dy.shape))
-    print("dx Shape : {}".format(dx.shape))
+    # print("Gxy Shape : {}".format(Gxy.shape))
+    # print("dy Shape : {}".format(dy.shape))
+    # print("dx Shape : {}".format(dx.shape))
 
     Ixx = dx ** 2
     Ixy = dy * dx
@@ -152,7 +152,7 @@ def saveCornerResult(filename, corner_list, corner_img):
                     "r": str(corner_list[i][2])
                 })
         df = pd.read_csv(csvfile)
-        print(filename, len(df.index))
+        print(filename, 'corners', len(df.index))
         plt.bar(df['x'], df['r'])
         plt.savefig(os.path.join("output", "charts", f"{filename}"))
 
