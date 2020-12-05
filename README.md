@@ -1,12 +1,12 @@
-## How it Works
+# How it Works
 
 Find the images from images directory as input and find harris corners and out the images and reports to output folder.
+
+# Getting Started
 
 ## Requirements
 
 - Python3
-
-## Getting Started
 
 ## Local Run
 
