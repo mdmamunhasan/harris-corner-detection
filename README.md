@@ -1,6 +1,6 @@
 # How it Works
 
-Find the images from images directory as input and find harris corners and out the images and reports to output folder.
+The scrip will find the images from images directory as input and find harris corners and out the images and reports to output folder.
 
 # Getting Started
 
@@ -10,19 +10,31 @@ Find the images from images directory as input and find harris corners and out t
 
 ## Local Run
 
-Go to project root and install packages
+Please go to project root and install python packages by follwing command
 
 ```
 pip install -r requirements.txt 
 ```
 
+To run the corner detections for images within images folder
+
+```
+python harris.py 
+```
+
 ## Notebook Run
 
-Install notebook 
+Please install notebook 
 
 ```
 pip install jupyterlab
 ```
 
-Open the file [harris.ipynb](http://localhost:8888/notebooks/harris.ipynb)
+Please start notebook server
+
+```
+jupyter notebook
+```
+
+Then please open the file [harris.ipynb](http://localhost:8888/notebooks/harris.ipynb)
 
