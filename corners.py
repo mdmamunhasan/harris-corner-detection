@@ -27,6 +27,17 @@ def myGaussianKernel(size, sigma=1, verbose=False):
     return kernel_2D
 
 
+def myBoxKernel(size, sigma=1, verbose=False):
+    kernel_2D = np.ones((size, size)) / 9
+
+    if verbose:
+        plt.imshow(kernel_2D, interpolation='none', cmap='gray')
+        plt.title("Kernel Image")
+        plt.show()
+
+    return kernel_2D
+
+
 def myImageFilter(image, kernel, average=False, verbose=False):
     print("Image Shape : {}".format(image.shape))
     print("Kernel Shape : {}".format(kernel.shape))
@@ -69,8 +80,37 @@ def myImageFilter(image, kernel, average=False, verbose=False):
     return output
 
 
-def findImageCorners(gray_img, kernel, method, verbose=False):
-    k = 0.04
+def saveCornerResult(filename, output_dir, corner_list, corner_img):
+    with open(os.path.join(output_dir, f"{filename}_corners.csv"), 'w') as corner_file:
+        writer = csv.DictWriter(corner_file, fieldnames=["x", "y", "r"])
+        writer.writeheader()
+        for i in range(len(corner_list)):
+            writer.writerow({
+                "x": str(corner_list[i][0]),
+                "y": str(corner_list[i][1]),
+                "r": str(corner_list[i][2])
+            })
+
+    if corner_img is not None:
+        cv2.imwrite(os.path.join(output_dir, f"{filename}.png"), corner_img)
+
+
+def findImageCorners(filepath, kernel, verbose=False):
+    input_img = cv2.imread(filepath)
+    gray_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY)
+    output_dir = None
+
+    if verbose:
+        plt.title("Input Image")
+        plt.imshow(gray_img, cmap='gray')
+        plt.show()
+    else:
+        filename = filepath.split(os.path.sep, 2)[-1]
+        dynamic_dir = filename.replace('.', '_')
+        output_dir = os.path.join("output", dynamic_dir)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
     window_size = 5
 
     # Gx, Gy = np.gradient(gray_img) # skip builtin method
@@ -98,8 +138,15 @@ def findImageCorners(gray_img, kernel, method, verbose=False):
     Ixy = Gy * Gx
     Iyy = Gy ** 2
 
-    corner_list = []
-    output_img = cv2.cvtColor(gray_img.copy(), cv2.COLOR_GRAY2RGB)
+    harris_corner_list = []
+    harris_output_img = cv2.cvtColor(gray_img.copy(), cv2.COLOR_GRAY2RGB)
+
+    kanade_corner_list = []
+    kanade_output_img = cv2.cvtColor(gray_img.copy(), cv2.COLOR_GRAY2RGB)
+
+    nobel_corner_list = []
+    nobel_output_img = cv2.cvtColor(gray_img.copy(), cv2.COLOR_GRAY2RGB)
+
     for y in range(offset, y_range):
         for x in range(offset, x_range):
             # Values of sliding window
@@ -125,65 +172,64 @@ def findImageCorners(gray_img, kernel, method, verbose=False):
             det = (Sxx * Syy) - (Sxy ** 2)
             trace = Sxx + Syy
 
-            if method == "k":
-                # Calculate r for Kanade & Tomasi Corner equation
-                # lamda1 * lamda2 = det
-                # lamda1 + lamda2 = trace
-                w, v = np.linalg.eig(M)
-                r = np.min(w)
-                threshold = 1.00
-            elif method == "n":
-                # Calculate r for Nobel Corner equation
-                e = 1
-                r = det / (trace + e)
-                threshold = 1.00
-            else:
-                # Calculate r for Harris Corner equation
-                r = det - k * (trace ** 2)
-                threshold = 10000.00
-
+            # Calculate r for Harris Corner equation
+            title = "Harris"
+            k = 0.04
+            r = det - k * (trace ** 2)
+            threshold = 10000.00
             if r > threshold:
-                corner_list.append([x, y, r])
+                harris_corner_list.append([x, y, r])
                 # cv2.circle(output_img, (x, y), 1, 255, -1)
-                output_img[y, x] = (0, 0, 255)
+                harris_output_img[y, x] = (0, 0, 255)
+
+            # Calculate r for Kanade & Tomasi Corner equation
+            title = "Kanade & Tomasi"
+            # lamda1 * lamda2 = det
+            # lamda1 + lamda2 = trace
+            w, v = np.linalg.eig(M)
+            r = np.min(w)
+            threshold = 1.00
+            if r > threshold:
+                kanade_corner_list.append([x, y, r])
+                # cv2.circle(output_img, (x, y), 1, 255, -1)
+                kanade_output_img[y, x] = (0, 0, 255)
+
+            # Calculate r for Nobel Corner equation
+            title = "Nobel"
+            e = 1
+            r = det / (trace + e)
+            threshold = 100.00
+            if r > threshold:
+                nobel_corner_list.append([x, y, r])
+                # cv2.circle(output_img, (x, y), 1, 255, -1)
+                nobel_output_img[y, x] = (0, 0, 255)
 
     if verbose:
-        plt.title("Output Image")
-        plt.imshow(output_img, cmap='gray')
+        plt.title("Harris Output Image")
+        plt.imshow(harris_output_img, cmap='gray')
         plt.show()
 
-    return corner_list, output_img
+        plt.title("Kanade & Tomasi Output Image")
+        plt.imshow(kanade_output_img, cmap='gray')
+        plt.show()
 
-
-def saveCornerResult(filename, corner_list, corner_img):
-    with open(os.path.join("output", "charts", f"{filename}.csv"), 'w') as corner_file:
-        writer = csv.DictWriter(corner_file, fieldnames=["x", "y", "r"])
-        writer.writeheader()
-        for i in range(len(corner_list)):
-            writer.writerow({
-                "x": str(corner_list[i][0]),
-                "y": str(corner_list[i][1]),
-                "r": str(corner_list[i][2])
-            })
-
-    if corner_img is not None:
-        cv2.imwrite(os.path.join("output", "images", filename), corner_img)
+        plt.title(f"Nobel Output Image")
+        plt.imshow(nobel_output_img, cmap='gray')
+        plt.show()
+    else:
+        saveCornerResult("harris", output_dir, harris_corner_list, harris_output_img)
+        saveCornerResult("kanade", output_dir, kanade_corner_list, kanade_output_img)
+        saveCornerResult("nobel", output_dir, nobel_corner_list, nobel_output_img)
 
 
 def main():
-    kernel = myGaussianKernel(size=5, sigma=2)
-
+    # kernel = cv2.getGaussianKernel(5, sigma=2) # skip built in method
+    kernel = myGaussianKernel(size=3, sigma=1, verbose=True)
+    # kernel = myBoxKernel(size=3, verbose=True)
     files = glob.glob(os.path.join("images", "img*"))
-    for file in files:
-        filename = file.split(os.path.sep)[-1]
-        try:
-            input_img = cv2.imread(file)
-            gray_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY)
-        except Exception as error:
-            print(f"Input {filename}: {error}")
-            continue
-        corner_list, output_img = findImageCorners(gray_img, kernel, method="n")
-        saveCornerResult(filename, corner_list, output_img)
+    for fpath in files:
+        if os.path.isfile(fpath):
+            findImageCorners(fpath, kernel, verbose=False)
 
 
 if __name__ == "__main__":

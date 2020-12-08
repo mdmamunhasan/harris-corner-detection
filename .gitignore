@@ -1,7 +1,5 @@
 .idea
-output/charts/*
-output/images/*
-output/*.csv
+output/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
