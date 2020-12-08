@@ -86,6 +86,12 @@ def myImageFilter(image, kernel, average=False, verbose=False):
     return output
 
 
+def scaleImage(img, scale):
+    h, w = img.shape
+    scale_img = cv2.resize(img, dsize=(int(w * scale), int(h * scale)), interpolation=cv2.INTER_LANCZOS4)
+    return scale_img
+
+
 def saveCornerResult(filename, output_dir, corner_list, corner_img):
     with open(os.path.join(output_dir, f"{filename}_corners.csv"), 'w') as corner_file:
         writer = csv.DictWriter(corner_file, fieldnames=["x", "y", "r"])
@@ -101,9 +107,11 @@ def saveCornerResult(filename, output_dir, corner_list, corner_img):
         cv2.imwrite(os.path.join(output_dir, f"{filename}.png"), corner_img)
 
 
-def findImageCorners(filepath, kernel, verbose=False):
+def findImageCorners(filepath, kernel, scale=1.0, verbose=False):
     input_img = cv2.imread(filepath)
     gray_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY)
+    if scale > 0 and scale != 1:
+        gray_img = scaleImage(gray_img, scale)
     output_dir = None
 
     if verbose:
@@ -235,12 +243,12 @@ def findImageCorners(filepath, kernel, verbose=False):
 
 def main():
     # kernel = cv2.getGaussianKernel(5, sigma=2) # skip built in method
-    kernel = myGaussianKernel(size=3, sigma=1, verbose=False)
-    # kernel = myBoxKernel(size=3, verbose=True)
+    kernel = myGaussianKernel(size=5, sigma=2, verbose=False)
+    # kernel = myBoxKernel(size=5, verbose=False)
     files = glob.glob(os.path.join("images", "img*"))
     for fpath in files:
         if os.path.isfile(fpath):
-            findImageCorners(fpath, kernel, verbose=False)
+            findImageCorners(fpath, kernel, scale=0.75, verbose=False)
 
 
 if __name__ == "__main__":
