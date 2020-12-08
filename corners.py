@@ -19,10 +19,13 @@ def myGaussianKernel(size, sigma=1, verbose=False):
     kernel_2D = np.outer(kernel_1D, kernel_1D)
     kernel_2D *= 1.0 / kernel_2D.max()
 
+    plt.imshow(kernel_2D, interpolation='none', cmap='gray')
+    plt.title("Gaussian Kernel Image")
+
     if verbose:
-        plt.imshow(kernel_2D, interpolation='none', cmap='gray')
-        plt.title("Kernel Image")
         plt.show()
+    else:
+        plt.savefig(os.path.join("output", f"gk{size}_{sigma}.png"))
 
     return kernel_2D
 
@@ -30,10 +33,13 @@ def myGaussianKernel(size, sigma=1, verbose=False):
 def myBoxKernel(size, sigma=1, verbose=False):
     kernel_2D = np.ones((size, size)) / 9
 
+    plt.imshow(kernel_2D, interpolation='none', cmap='gray')
+    plt.title("Box Kernel Image")
+
     if verbose:
-        plt.imshow(kernel_2D, interpolation='none', cmap='gray')
-        plt.title("Kernel Image")
         plt.show()
+    else:
+        plt.savefig(os.path.join("output", f"gk{size}_{sigma}.png"))
 
     return kernel_2D
 
@@ -116,15 +122,20 @@ def findImageCorners(filepath, kernel, verbose=False):
     # Gx, Gy = np.gradient(gray_img) # skip builtin method
     Gxy = myImageFilter(gray_img, kernel, average=True)
     Gy = np.diff(Gxy, axis=0, append=0)
+    plt.title("y derivative image")
+    plt.imshow(Gy, cmap='gray')
     if verbose:
-        plt.title("y derivative image")
-        plt.imshow(Gy, cmap='gray')
         plt.show()
+    else:
+        plt.savefig(os.path.join(output_dir, f"gy.png"))
+
     Gx = np.diff(Gxy, axis=1, append=0)
+    plt.title("x derivative image")
+    plt.imshow(Gx, cmap='gray')
     if verbose:
-        plt.title("x derivative image")
-        plt.imshow(Gx, cmap='gray')
         plt.show()
+    else:
+        plt.savefig(os.path.join(output_dir, f"gx.png"))
 
     offset = int(window_size / 2)
     y_range = gray_img.shape[0] - offset
@@ -224,8 +235,8 @@ def findImageCorners(filepath, kernel, verbose=False):
 
 def main():
     # kernel = cv2.getGaussianKernel(5, sigma=2) # skip built in method
-    kernel = myGaussianKernel(size=3, sigma=1, verbose=True)
-    # kernel = myBoxKernel(size=3, verbose=True)
+    kernel = myGaussianKernel(size=3, sigma=1, verbose=False)
+    kernel = myBoxKernel(size=3, verbose=True)
     files = glob.glob(os.path.join("images", "img*"))
     for fpath in files:
         if os.path.isfile(fpath):
