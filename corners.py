@@ -30,7 +30,7 @@ def myGaussianKernel(size, sigma=1, verbose=False):
     return kernel_2D
 
 
-def myBoxKernel(size, sigma=1, verbose=False):
+def myBoxKernel(size, verbose=False):
     kernel_2D = np.ones((size, size)) / 9
 
     plt.imshow(kernel_2D, interpolation='none', cmap='gray')
@@ -39,7 +39,7 @@ def myBoxKernel(size, sigma=1, verbose=False):
     if verbose:
         plt.show()
     else:
-        plt.savefig(os.path.join("output", f"gk{size}_{sigma}.png"))
+        plt.savefig(os.path.join("output", f"box{size}.png"))
 
     return kernel_2D
 
@@ -236,7 +236,7 @@ def findImageCorners(filepath, kernel, verbose=False):
 def main():
     # kernel = cv2.getGaussianKernel(5, sigma=2) # skip built in method
     kernel = myGaussianKernel(size=3, sigma=1, verbose=False)
-    kernel = myBoxKernel(size=3, verbose=True)
+    # kernel = myBoxKernel(size=3, verbose=True)
     files = glob.glob(os.path.join("images", "img*"))
     for fpath in files:
         if os.path.isfile(fpath):
